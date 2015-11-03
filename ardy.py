@@ -1,5 +1,6 @@
 import json
 import sys
+import subprocess
 
 import dateutil.parser
 from jinja2 import Environment, PackageLoader
@@ -44,37 +45,38 @@ def find_by_date(snapshots, date_string):
 
     return matching
 
+if __name__ == '__main__':
+    file_data = None
 
-file_data = None
+    with open('reporter-export.json') as f:
+        file_data = f.read()
 
-with open('reporter-export.json') as f:
-    file_data = f.read()
+    if not file_data:
+        print('No data read')
+    else:
+        reporter_export = json.loads(file_data)
+        snapshots = reporter_export['snapshots']
+        date_string = sys.argv[1]
+        dates = find_by_date(snapshots, date_string)
 
-if not file_data:
-    print('No data read')
-else:
-    reporter_export = json.loads(file_data)
-    snapshots = reporter_export['snapshots']
-    date_string = sys.argv[1]
-    dates = find_by_date(snapshots, date_string)
-    print(len(dates))
+        with open('entry.md', 'a') as f:
+            for snapshot in dates:
+                location = snapshot.get('location', {}).get('placemark', {})
+                weather = snapshot.get('weather', {})
+                date = parse_reporter_date(snapshot['date'])
 
-    for snapshot in dates:
-        location = snapshot.get('location').get('placemark')
-        weather = snapshot.get('weather')
-        date = parse_reporter_date(snapshot['date'])
+                f.write(snapshotmd.render(**{
+                    'date': date.date(),
+                    'time': date.time(),
+                    'locality': location.get('locality'),
+                    'postal_code': location.get('postalCode'),
+                    'state': location.get('administrativeArea'),
+                    'lat_long': location.get('region'),
+                    'tempF': weather.get('tempF'),
+                    'humidity': weather.get('relativeHumidity'),
+                    'windMPH': weather.get('windMPH'),
+                    'wind_direction': weather.get('windDirection'),
+                    'responses': snapshot.get('responses'),
+                }))
 
-        print(snapshotmd.render(**{
-            'date': date.date(),
-            'time': date.time(),
-            'locality': location.get('locality'),
-            'postal_code': location.get('postalCode'),
-            'state': location.get('administrativeArea'),
-            'lat_long': location.get('region'),
-            'tempF': weather.get('tempF'),
-            'humidity': weather.get('relativeHumidity'),
-            'windMPH': weather.get('windMPH'),
-            'wind_direction': weather.get('windDirection'),
-            'responses': snapshot.get('responses'),
-        }))
-
+        subprocess.call(['sh', 'import.sh', date_string])
