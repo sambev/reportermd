@@ -1,5 +1,6 @@
 # Reporter MD
 Convert your [Reporter App](http://www.reporter-app.com/) entries into markdown, then import them into [Day One](http://dayoneapp.com/)... If you want.
+[Example here](https://raw.githubusercontent.com/sambev/reportermd/master/images/dayone_example.png)
 
 ### General Usage:
 `python reportermd <date> <dayone>`
