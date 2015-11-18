@@ -1,10 +1,12 @@
+import argparse
+import os
 import json
-import sys
 import subprocess
 
 import dateutil.parser
 from jinja2 import Environment, PackageLoader
 
+# set up the jinja environment
 env = Environment(loader=PackageLoader('ardy', 'templates'),
                   trim_blocks=True,
                   lstrip_blocks=True)
@@ -45,38 +47,73 @@ def find_by_date(snapshots, date_string):
 
     return matching
 
-if __name__ == '__main__':
-    file_data = None
 
+def main():
+    '''
+    Do the actual work of reading in the reporter export, writing it as md and
+    importing it into dayone.
+    '''
+    parser = argparse.ArgumentParser(description='Import reporter app entries to dayone')
+    parser.add_argument('date', type=str, help='Date to import reports from')
+    parser.add_argument('--dayone',
+                        type=bool,
+                        help='Wether or not to import to dayone. (default: False)',
+                        default=False)
+
+    args = parser.parse_args()
+
+    # First try to find the reporter-export.json file and read it in. If nothing
+    # is found return early
+    if not os.path.isfile('reporter-export.json'):
+        print('[ERROR] No reporter-export file found. Looked in {0}'.format(
+            os.path.dirname(os.path.abspath(__file__))
+        ))
+        return 1;
+
+    print('Reading reporter-export.json...')
+
+    # Now read in the data
+    file_data = None
     with open('reporter-export.json') as f:
         file_data = f.read()
 
-    if not file_data:
-        print('No data read')
-    else:
-        reporter_export = json.loads(file_data)
-        snapshots = reporter_export['snapshots']
-        date_string = sys.argv[1]
-        dates = find_by_date(snapshots, date_string)
+    # Load the data in as json and find the snapshot by date
+    reporter_export = json.loads(file_data)
+    snapshots = reporter_export['snapshots']
+    date_string = args.date
+    import_to_dayone = args.dayone
+    dates = find_by_date(snapshots, date_string)
+    markdown_file_name = 'entry-{0}.md'.format(date_string)
 
-        with open('entry.md', 'a') as f:
-            for snapshot in dates:
-                location = snapshot.get('location', {}).get('placemark', {})
-                weather = snapshot.get('weather', {})
-                date = parse_reporter_date(snapshot['date'])
+    # open up the markdown file for writing.
+    with open(markdown_file_name, 'a') as f:
+        print('Writing markdown file...')
+        for snapshot in dates:
+            location = snapshot.get('location', {}).get('placemark', {})
+            weather = snapshot.get('weather', {})
+            date = parse_reporter_date(snapshot['date'])
 
-                f.write(snapshotmd.render(**{
-                    'date': date.date(),
-                    'time': date.time(),
-                    'locality': location.get('locality'),
-                    'postal_code': location.get('postalCode'),
-                    'state': location.get('administrativeArea'),
-                    'lat_long': location.get('region'),
-                    'tempF': weather.get('tempF'),
-                    'humidity': weather.get('relativeHumidity'),
-                    'windMPH': weather.get('windMPH'),
-                    'wind_direction': weather.get('windDirection'),
-                    'responses': snapshot.get('responses'),
-                }))
+            f.write(snapshotmd.render(**{
+                'date': date.date(),
+                'time': date.time(),
+                'locality': location.get('locality'),
+                'postal_code': location.get('postalCode'),
+                'state': location.get('administrativeArea'),
+                'lat_long': location.get('region'),
+                'tempF': weather.get('tempF'),
+                'humidity': weather.get('relativeHumidity'),
+                'windMPH': weather.get('windMPH'),
+                'wind_direction': weather.get('windDirection'),
+                'responses': snapshot.get('responses'),
+            }))
+        print('Markdown file {0} written!'.format(markdown_file_name))
 
-        subprocess.call(['sh', 'import.sh', date_string])
+    if import_to_dayone:
+        print('Importing into DayOne...')
+        subprocess.call(['sh',
+                         'import_to_dayone.sh',
+                         date_string,
+                         markdown_file_name])
+
+if __name__ == '__main__':
+    main()
