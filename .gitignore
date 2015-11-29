@@ -1,2 +1,5 @@
 reporter-export.json
 *.pyc
+*.egg-info
+dist
+build

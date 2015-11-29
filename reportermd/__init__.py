@@ -7,7 +7,7 @@ import dateutil.parser
 from jinja2 import Environment, PackageLoader
 
 # set up the jinja environment
-env = Environment(loader=PackageLoader('ardy', 'templates'),
+env = Environment(loader=PackageLoader('templates'),
                   trim_blocks=True,
                   lstrip_blocks=True)
 snapshotmd = env.get_template('snapshot.md')
@@ -114,6 +114,3 @@ def main():
                          'import_to_dayone.sh',
                          date_string,
                          markdown_file_name])
-
-if __name__ == '__main__':
-    main()
