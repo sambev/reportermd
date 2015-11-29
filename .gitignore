@@ -3,3 +3,4 @@ reporter-export.json
 *.egg-info
 dist
 build
+entry*
