@@ -110,10 +110,11 @@ def main():
 
     if import_to_dayone:
         print('Importing into DayOne...')
-        subprocess.call(['sh',
-                         'import_to_dayone.sh',
-                         date_string,
-                         markdown_file_name])
+        with open(markdown_file_name, 'r') as f:
+            subprocess.call(['dayone',
+                            ('-d=%s' % date_string),
+                            'new'],
+                            stdin=f)
 
 if __name__ == '__main__':
     main()
