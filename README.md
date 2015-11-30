@@ -35,3 +35,9 @@ From Source:
  
 With pip:
 `pip install reportermd`
+
+With easy_install:
+`easy install reportermd`
+
+### Requirements:
+Tested on python 2.7.10
