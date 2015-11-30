@@ -27,7 +27,11 @@ python reportermd 2015-10-28 --dayone=True
 ---
 
 ### Installation
-Currently I only have the hard way:
+From Source:
  1. `git clone https://github.com/sambev/reportermd.git`
  2. `cd reportermd`
- 3. `pip install -r requirements.txt`
+ 3. `python setup.py install`
+ 4. 
+ 
+With pip:
+`pip install reportermd`
