@@ -1,9 +1,10 @@
 from setuptools import setup
+from reportermd.cli import __VERSION__
 
 setup(
     name='reportermd',
     packages=['reportermd'],
-    version='0.0.5',
+    version=__VERSION__,
     description='Convert your Reporter App dates to MD then import to Day One',
     author='Sam Beveridge',
     author_email='sam.bev87@gmail.com',

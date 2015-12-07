@@ -1,3 +1,5 @@
+__VERSION__ = '0.0.6'
+
 import argparse
 import os
 import json
@@ -55,6 +57,10 @@ def main():
     Do the actual work of reading in the reporter export, writing it as md and
     importing it into dayone.
     '''
+    if (sys.argv[1] in ['-v', '--version']):
+        print(__VERSION__)
+        return 0
+
     parser = argparse.ArgumentParser(description='Import reporter app entries to dayone')
     parser.add_argument('date', type=str, help='Date to import reports from')
     parser.add_argument('--dayone',
@@ -67,10 +73,8 @@ def main():
     # First try to find the reporter-export.json file and read it in. If nothing
     # is found return early
     if not os.path.isfile('reporter-export.json'):
-        print('[ERROR] No reporter-export file found. Looked in {0}'.format(
-            os.path.dirname(os.path.abspath(__file__))
-        ))
-        return 1;
+        print('[ERROR] No reporter-export file found.')
+        return 1
 
     print('Reading reporter-export.json...')
 
@@ -87,8 +91,8 @@ def main():
     dates = find_by_date(snapshots, date_string)
 
     if len(dates) == 0:
-        print('No entryies for date provided')
-        return 1;
+        print('No entries for date provided')
+        return 1
 
     markdown_file_name = 'entry-{0}.md'.format(date_string)
 
@@ -121,7 +125,7 @@ def main():
         print('******* ERROR START ********')
         traceback.print_exc(file=sys.stdout)
         print('*******  ERROR END  ********\n')
-        return 1;
+        return 1
 
     if import_to_dayone:
         print('Importing into DayOne...')
