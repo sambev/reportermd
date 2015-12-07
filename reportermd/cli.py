@@ -2,6 +2,8 @@ import argparse
 import os
 import json
 import subprocess
+import sys
+import traceback
 
 import dateutil.parser
 from jinja2 import Environment, PackageLoader
@@ -83,30 +85,43 @@ def main():
     date_string = args.date
     import_to_dayone = args.dayone
     dates = find_by_date(snapshots, date_string)
+
+    if len(dates) == 0:
+        print('No entryies for date provided')
+        return 1;
+
     markdown_file_name = 'entry-{0}.md'.format(date_string)
 
     # open up the markdown file for writing.
-    with open(markdown_file_name, 'a') as f:
-        print('Writing markdown file...')
-        for snapshot in dates:
-            location = snapshot.get('location', {}).get('placemark', {})
-            weather = snapshot.get('weather', {})
-            date = parse_reporter_date(snapshot['date'])
+    try:
+        with open(markdown_file_name, 'a') as f:
+            print('Writing markdown file...')
+            for snapshot in dates:
+                location = snapshot.get('location', {}).get('placemark', {})
+                weather = snapshot.get('weather', {})
+                date = parse_reporter_date(snapshot['date'])
 
-            f.write(snapshotmd.render(**{
-                'date': date.date(),
-                'time': date.time(),
-                'locality': location.get('locality'),
-                'postal_code': location.get('postalCode'),
-                'state': location.get('administrativeArea'),
-                'lat_long': location.get('region'),
-                'tempF': weather.get('tempF'),
-                'humidity': weather.get('relativeHumidity'),
-                'windMPH': weather.get('windMPH'),
-                'wind_direction': weather.get('windDirection'),
-                'responses': snapshot.get('responses'),
-            }))
-        print('Markdown file {0} written!'.format(markdown_file_name))
+                f.write(snapshotmd.render(**{
+                    'date': date.date(),
+                    'time': date.time(),
+                    'locality': location.get('locality'),
+                    'postal_code': location.get('postalCode'),
+                    'state': location.get('administrativeArea'),
+                    'lat_long': location.get('region'),
+                    'tempF': weather.get('tempF'),
+                    'humidity': weather.get('relativeHumidity'),
+                    'windMPH': weather.get('windMPH'),
+                    'wind_direction': weather.get('windDirection'),
+                    'responses': snapshot.get('responses'),
+                }))
+            print('Markdown file {0} written!'.format(markdown_file_name))
+    except Exception as e:
+        print('Error writing file. This is probably a bug.')
+        print('Please submit this traceback in your issue:\n')
+        print('******* ERROR START ********')
+        traceback.print_exc(file=sys.stdout)
+        print('*******  ERROR END  ********\n')
+        return 1;
 
     if import_to_dayone:
         print('Importing into DayOne...')
