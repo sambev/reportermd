@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='reportermd',
     packages=['reportermd'],
-    version='0.0.4',
+    version='0.0.5',
     description='Convert your Reporter App dates to MD then import to Day One',
     author='Sam Beveridge',
     author_email='sam.bev87@gmail.com',
