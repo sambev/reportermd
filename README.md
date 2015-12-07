@@ -37,7 +37,7 @@ With pip:
 `pip install reportermd`
 
 With easy_install:
-`easy install reportermd`
+`easy_install reportermd`
 
 ### Requirements:
 Tested on python 2.7.10
